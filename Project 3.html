@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Todo App</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    input { padding: 8px; width: 200px; }
+    button { padding: 6px 10px; margin-left: 5px; }
+    ul { list-style: none; padding: 0; margin-top: 20px; }
+    li { 
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between; 
+      padding: 8px; 
+      border-bottom: 1px solid #ddd; 
+    }
+    .completed { text-decoration: line-through; color: gray; }
+    .filters button { margin: 5px; }
+  </style>
+</head>
+<body>
+  <h2>Todo App</h2>
+
+  <input type="text" id="taskInput" placeholder="Enter task">
+  <button onclick="addTask()">Add</button>
+
+  <div class="filters">
+    <button onclick="showTasks('all')">All</button>
+    <button onclick="showTasks('completed')">Completed</button>
+    <button onclick="showTasks('pending')">Pending</button>
+  </div>
+
+  <ul id="taskList"></ul>
+
+  <script>
+    let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+
+    function saveTasks() {
+      localStorage.setItem("tasks", JSON.stringify(tasks));
+    }
+
+    function addTask() {
+      const input = document.getElementById("taskInput");
+      const taskText = input.value.trim();
+      if (!taskText) return;
+
+      tasks.push({ text: taskText, completed: false });
+      input.value = "";
+      saveTasks();
+      showTasks();
+    }
+
+    function toggleTask(index) {
+      tasks[index].completed = !tasks[index].completed;
+      saveTasks();
+      showTasks();
+    }
+
+    function deleteTask(index) {
+      tasks.splice(index, 1);
+      saveTasks();
+      showTasks();
+    }
+
+    function showTasks(filter = "all") {
+      const list = document.getElementById("taskList");
+      list.innerHTML = "";
+
+      tasks.forEach((task, index) => {
+        if (
+          filter === "completed" && !task.completed ||
+          filter === "pending" && task.completed
+        ) return;
+
+        const li = document.createElement("li");
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = task.completed;
+        checkbox.onchange = () => toggleTask(index);
+
+        const span = document.createElement("span");
+        span.textContent = task.text;
+        if (task.completed) span.classList.add("completed");
+
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "Delete";
+        delBtn.onclick = () => deleteTask(index);
+
+        li.appendChild(checkbox);
+        li.appendChild(span);
+        li.appendChild(delBtn);
+
+        list.appendChild(li);
+      });
+    }
+
+    // Show tasks on page load
+    showTasks();
+  </script>
+</body>
+</html>
